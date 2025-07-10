@@ -1216,12 +1216,40 @@ buttons.confirmReason2.addEventListener("keydown", e => {
   Array.from(containers.pass1.querySelectorAll(".passwort-reason")).forEach(btn => {
     btn.addEventListener("click", () => {
       passReason = btn.dataset.reason;
-      document.getElementById("passwortHeadline").textContent = `Grund: ${passReason}`;
-      hideAllViews();
-      showView("pass2");
-      focusDelayed(inputs.newPassword);
+  
+      if (passReason === "Sonstiges") {
+        // Nur bei "Sonstiges" Eingabe anzeigen
+        document.getElementById("passwortHeadline").textContent = `Grund: ${passReason}`;
+        hideAllViews();
+        showView("pass2");
+        focusDelayed(inputs.newPassword);
+      } else {
+        // Kein zusätzliches Feld – direkt absenden
+        const payload = {
+          kachelname: "Zalando Passwort zurücksetzen",
+          reason:     passReason,
+          password:   "", // Kein Passwortfeld nötig
+          personalnummer: inputs.persNr.value.trim(),
+          filialnummer:   inputs.filNr.value.trim()
+        };
+  
+        fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Fehler beim Senden");
+            showView("tile");
+          })
+          .catch(err => {
+            console.error("❌ Fehler beim direkten Passwort-Reset-Ticket:", err);
+            alert("Fehler beim Absenden: " + err.message);
+          });
+      }
     });
   });
+  
 
 // ─── Keyboard-Navigation bei „Zalando Passwort zurücksetzen“ ───
 const passButtons = Array.from(containers.pass1.querySelectorAll(".passwort-reason"));
