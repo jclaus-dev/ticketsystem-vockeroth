@@ -894,24 +894,27 @@ function buildReasonGrid1(grid, reasons, eans) {
 
 // 2) Confirm-Button: Klick oder Enter → Ticket versenden + Reset + Tile-Ansicht
 buttons.confirmReason.onclick = () => {
-  if (!assignments.hasOwnProperty(eans[0])) return;
+  const eanKeys = Object.keys(assignments);
+  if (eanKeys.length === 0) return;
 
-  // a) Ticket senden
+  const ean1 = eanKeys[0];
+  const reason1 = assignments[ean1];
+
   sendZalandoTicket({
     kachelname: currentTileName,
     orderId:    inputs.best1.value.trim(),
-    eans:       [eans[0]],
-    reason:     assignments[eans[0]]
+    ean1:       ean1,
+    ean2:       "", // leer übergeben, damit der Flow funktioniert
+    reason:     reason1
   });
 
-  // b) Komplettes Zurücksetzen
   resetZalandoFlowCompletely();
   Object.keys(assignments).forEach(key => delete assignments[key]);
-
-  // c) Unmittelbar zurück zur Tile-Übersicht
   hideAllViews();
   showView("tile");
 };
+
+
 
 // ← Änderung hier: Keydown auf Confirm-Button muss propagation stoppen
 buttons.confirmReason.addEventListener("keydown", e => {
@@ -1138,24 +1141,26 @@ function buildReasonGrid2(grid, reasons, eans) {
 buttons.confirmReason2.onclick = () => {
   if (Object.keys(assignments).length < eans.length) return;
 
-  // a) Für jede EAN ein Ticket senden
-  Object.entries(assignments).forEach(([ean, grund]) => {
-    sendZalandoTicket({
-      kachelname: currentTileName,
-      orderId:    inputs.best1.value.trim(),
-      eans:       [ean],
-      reason:     grund
-    });
+  const [ean1, ean2] = Object.keys(assignments);
+  const reason1 = assignments[ean1];
+  const reason2 = assignments[ean2];
+
+  sendZalandoTicket({
+    kachelname: currentTileName,
+    orderId:    inputs.best1.value.trim(),
+    ean1,
+    ean2,
+    reason:     `${reason1}; ${reason2}`
   });
 
-  // b) Komplettes Zurücksetzen
+
+  // Reset
   resetZalandoFlowCompletely();
   Object.keys(assignments).forEach(key => delete assignments[key]);
-
-  // c) Zur Tile-Übersicht wechseln
   hideAllViews();
   showView("tile");
 };
+
 
 // ← Änderung hier: auch bei confirmReason2 stoppen wir die Propagation
 buttons.confirmReason2.addEventListener("keydown", e => {
@@ -1187,11 +1192,12 @@ buttons.confirmReason2.addEventListener("keydown", e => {
 
 
 
-  async function sendZalandoTicket({ kachelname, orderId, eans, reason }) {
+  async function sendZalandoTicket({ kachelname, orderId, ean1, ean2, reason }) {
     const payload = {
       kachelname,
       orderId,
-      eans,
+      ean1, // ← erwartet direktes Feld
+      ean2, // ← erwartet direktes Feld
       reason,
       personalnummer: inputs.persNr.value.trim(),
       filialnummer:   inputs.filNr.value.trim()
@@ -1214,42 +1220,42 @@ buttons.confirmReason2.addEventListener("keydown", e => {
 
   // ─────────── Passwort-Reset-Flow ───────────
   Array.from(containers.pass1.querySelectorAll(".passwort-reason")).forEach(btn => {
-    btn.addEventListener("click", () => {
-      passReason = btn.dataset.reason;
-  
-      if (passReason === "Sonstiges") {
-        // Nur bei "Sonstiges" Eingabe anzeigen
-        document.getElementById("passwortHeadline").textContent = `Grund: ${passReason}`;
-        hideAllViews();
-        showView("pass2");
-        focusDelayed(inputs.newPassword);
-      } else {
-        // Kein zusätzliches Feld – direkt absenden
-        const payload = {
-          kachelname: "Zalando Passwort zurücksetzen",
-          reason:     passReason,
-          password:   "", // Kein Passwortfeld nötig
-          personalnummer: inputs.persNr.value.trim(),
-          filialnummer:   inputs.filNr.value.trim()
-        };
-  
-        fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+  btn.addEventListener("click", () => {
+    passReason = btn.dataset.reason;
+
+    if (passReason === "Sonstiges") {
+      // Nur bei "Sonstiges" Eingabe anzeigen
+      document.getElementById("passwortHeadline").textContent = `Grund: ${passReason}`;
+      hideAllViews();
+      showView("pass2");
+      focusDelayed(inputs.newPassword);
+    } else {
+      // Kein zusätzliches Feld – direkt absenden
+      const payload = {
+        kachelname: "Zalando Passwort zurücksetzen",
+        reason:     passReason,
+        password:   "", // Kein Passwortfeld nötig
+        personalnummer: inputs.persNr.value.trim(),
+        filialnummer:   inputs.filNr.value.trim()
+      };
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Fehler beim Senden");
+          showView("tile");
         })
-          .then(res => {
-            if (!res.ok) throw new Error("Fehler beim Senden");
-            showView("tile");
-          })
-          .catch(err => {
-            console.error("❌ Fehler beim direkten Passwort-Reset-Ticket:", err);
-            alert("Fehler beim Absenden: " + err.message);
-          });
-      }
-    });
+        .catch(err => {
+          console.error("❌ Fehler beim direkten Passwort-Reset-Ticket:", err);
+          alert("Fehler beim Absenden: " + err.message);
+        });
+    }
   });
-  
+});
+
 
 // ─── Keyboard-Navigation bei „Zalando Passwort zurücksetzen“ ───
 const passButtons = Array.from(containers.pass1.querySelectorAll(".passwort-reason"));
