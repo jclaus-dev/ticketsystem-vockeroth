@@ -311,6 +311,23 @@ function showView(name) {
     });
   });
 
+let lastFocusableElement = null;
+
+// Wenn ein Element den Fokus bekommt → merken
+document.addEventListener("focusin", (e) => {
+  const el = e.target;
+  if (el.matches("button, input, textarea, [tabindex]:not([tabindex='-1'])")) {
+    lastFocusableElement = el;
+  }
+});
+
+// Wenn ins Leere geklickt wird → Fokus zurück auf vorheriges Element
+document.addEventListener("mousedown", (e) => {
+  const clickedInsideFocusable = e.target.closest("button, input, textarea, [tabindex]:not([tabindex='-1'])");
+  if (!clickedInsideFocusable && lastFocusableElement) {
+    setTimeout(() => lastFocusableElement.focus(), 0);
+  }
+});
 
   
   // Auf Enter in PersNr → Fokus auf FilNr
