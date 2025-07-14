@@ -311,24 +311,6 @@ function showView(name) {
     });
   });
 
-let lastFocusableElement = null;
-
-// Wenn ein Element den Fokus bekommt → merken
-document.addEventListener("focusin", (e) => {
-  const el = e.target;
-  if (el.matches("button, input, textarea, [tabindex]:not([tabindex='-1'])")) {
-    lastFocusableElement = el;
-  }
-});
-
-// Wenn ins Leere geklickt wird → Fokus zurück auf vorheriges Element
-document.addEventListener("mousedown", (e) => {
-  const clickedInsideFocusable = e.target.closest("button, input, textarea, [tabindex]:not([tabindex='-1'])");
-  if (!clickedInsideFocusable && lastFocusableElement) {
-    setTimeout(() => lastFocusableElement.focus(), 0);
-  }
-});
-
   
   // Auf Enter in PersNr → Fokus auf FilNr
   inputs.persNr.addEventListener("keydown", e => {
@@ -1476,6 +1458,34 @@ function focusFirstPasswortReason() {
       if (selectedTileIndex < 0) selectedTileIndex = 0;
     }
   }
+document.addEventListener("keydown", (e) => {
+  if (document.activeElement === document.body && lastFocusableElement) {
+    lastFocusableElement.focus();
+  }
+});
+   // Fokus-Wiederherstellung bei unfokussierten Klicks aktivieren
+let lastFocusableElement = null;
+
+const isFocusable = (el) => {
+  return el && el.matches("button, input, textarea, select, a[href], [tabindex]:not([tabindex='-1'])");
+};
+
+// Speichere zuletzt fokussiertes Element
+document.addEventListener("focusin", (e) => {
+  if (isFocusable(e.target)) {
+    lastFocusableElement = e.target;
+  }
+});
+
+// Wenn irgendwo hingeklickt wird, das kein Fokus-Element ist → alten Fokus zurückholen
+document.addEventListener("mousedown", (e) => {
+  const clickedInsideFocusable = e.target.closest("button, input, textarea, select, a[href], [tabindex]:not([tabindex='-1'])");
+  if (!clickedInsideFocusable && lastFocusableElement) {
+    setTimeout(() => {
+      lastFocusableElement.focus();
+    }, 0);
+  }
+});
 
   // 4) Optische Hervorhebung & Fokus auf die gewählte Kachel
   updateTileSelection();
