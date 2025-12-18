@@ -8,6 +8,7 @@ const eanFields = [
 ].filter(field => field.input && field.box);
 
 let activeEanCount = 1;
+const opt1Headline = document.querySelector("#containerBestellungOpt1 h2");
 
 function resetZalandoStep2() {
   inputs.ean1.value = "";
@@ -123,9 +124,18 @@ confirmBtn.addEventListener("click", () => {
   hideAllViews();
 
   if (eans.length === 1) {
+    if (opt1Headline) opt1Headline.textContent = "W\u00e4hle eine EAN aus:";
     showView("opt1");
     buildReasonGrid1(reasonGrid1, ZALANDO_REASONS, eans);
   } else {
+    if (opt2Headline) {
+      const mapText = {
+        2: "W\u00e4hle zwei EANs aus:",
+        3: "W\u00e4hle drei EANs aus:",
+        4: "W\u00e4hle vier EANs aus:"
+      };
+      opt2Headline.textContent = mapText[eans.length] || "W\u00e4hle EANs aus:";
+    }
     showView("opt2");
     buildReasonGrid2(reasonGrid2, ZALANDO_REASONS, eans);
   }
@@ -205,7 +215,9 @@ function buildReasonGrid1(grid, reasons, eans) {
           padding: 2px 4px;
           text-align: center;
         `;
-        tagBox.innerHTML = `<div>${currentEAN}</div>`;
+        const idx = eans.indexOf(currentEAN);
+        const label = idx >= 0 ? `${idx + 1}. ${currentEAN}` : currentEAN;
+        tagBox.innerHTML = `<div>${label}</div>`;
         btn.appendChild(tagBox);
         const removeBtn = document.createElement("span");
         removeBtn.className = "remove-tag";
@@ -347,11 +359,11 @@ function buildReasonGrid2(grid, reasons, eans) {
 
   function updateUI() {
     const usagePerReason = {};
-    eanEntries.forEach(entry => {
+    eanEntries.forEach((entry, index) => {
       const grund = assignments[entry.key];
       if (!grund) return;
       if (!usagePerReason[grund]) usagePerReason[grund] = [];
-      usagePerReason[grund].push(entry.label);
+      usagePerReason[grund].push(`${index + 1}. ${entry.label}`);
     });
 
     Array.from(grid.children).forEach(btn => {
