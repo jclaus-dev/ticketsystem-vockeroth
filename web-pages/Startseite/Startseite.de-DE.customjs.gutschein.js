@@ -8,28 +8,32 @@ function resetGutscheinForm() {
   arrowNext.style.color = "white";
 }
 
+function getEuroNumericValue() {
+  return inputs.gutscheinWert.value.replace(/[^\d]/g, "");
+}
+
 function updateGutscheinUI() {
   const codeOk = inputs.gutschein.value.trim();
-  const wertOk = inputs.gutscheinWert.value.trim();
+  const wertOk = getEuroNumericValue();
   document.getElementById("kachelCode").style.borderColor = codeOk ? "green" : "";
   document.getElementById("kachelWert").style.borderColor = wertOk ? "green" : "";
   arrowNext.style.color = codeOk && wertOk ? "green" : "white";
 }
 
-function sanitizeEuroInput() {
-  const raw = inputs.gutscheinWert.value.replace(/[^\d]/g, "");
-  if (!raw) {
-    inputs.gutscheinWert.value = "";
-    return "";
-  }
-  inputs.gutscheinWert.value = `${raw} €`;
-  return raw;
-}
-
 inputs.gutschein.addEventListener("input", updateGutscheinUI);
 inputs.gutscheinWert.addEventListener("input", () => {
-  sanitizeEuroInput();
+  const raw = getEuroNumericValue();
+  inputs.gutscheinWert.value = raw;
   updateGutscheinUI();
+});
+
+inputs.gutscheinWert.addEventListener("focus", () => {
+  inputs.gutscheinWert.value = getEuroNumericValue();
+});
+
+inputs.gutscheinWert.addEventListener("blur", () => {
+  const raw = getEuroNumericValue();
+  inputs.gutscheinWert.value = raw ? `${raw} €` : "";
 });
 
 inputs.gutscheinWert.addEventListener("keydown", e => {
@@ -55,7 +59,7 @@ inputs.gutscheinWert.addEventListener("keydown", e => {
 arrowNext.addEventListener("click", async e => {
   e.preventDefault();
   const code = inputs.gutschein.value.trim();
-  const wert = sanitizeEuroInput();
+  const wert = getEuroNumericValue();
   if (!code || !wert || hasSent) return;
 
   hasSent = true;
@@ -111,7 +115,7 @@ async function sendGutschein() {
     await sendPlannerTicket({
       kachelname:    currentTileName || "Online Gutscheine",
       gutscheincode: inputs.gutschein.value.trim(),
-      gutscheinwert: sanitizeEuroInput()
+      gutscheinwert: getEuroNumericValue()
     });
     showView("tile");
   } catch (err) {

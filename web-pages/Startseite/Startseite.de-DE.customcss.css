@@ -655,8 +655,8 @@ body.keyboard-mode .tile.clickable:hover:not(.keyboard-selected) {
 }
 
 .ticket-card.done {
-  background: #2e7d32;
-  border-color: #2e7d32;
+  background: #46aa4b;
+  border-color: #46aa4b;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
