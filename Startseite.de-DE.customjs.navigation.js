@@ -82,6 +82,9 @@ if (buttons.passPrev1) {
 buttons.sonstPrev.addEventListener("click", goBackToTiles);
 buttons.mboardPrev.addEventListener("click", goBackToTiles);
 buttons.zalandoPrev.addEventListener("click", goBackToTiles);
+if (buttons.mboardRetourePrev) {
+  buttons.mboardRetourePrev.addEventListener("click", goBackToTiles);
+}
 
 function updateTile() {
   tiles.forEach((t, i) => {
@@ -137,6 +140,11 @@ function selectTile(i, name) {
       console.log("showView mboard triggered!");
       showView("mboard");
       focusDelayed(inputs.mboard);
+      break;
+
+    case "M-Board Retoure":
+      showView("mboardRetoure");
+      focusDelayed(inputs.mboardOrder);
       break;
 
     default:

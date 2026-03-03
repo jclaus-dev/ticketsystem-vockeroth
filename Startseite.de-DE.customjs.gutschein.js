@@ -33,7 +33,7 @@ inputs.gutscheinWert.addEventListener("focus", () => {
 
 inputs.gutscheinWert.addEventListener("blur", () => {
   const raw = getEuroNumericValue();
-  inputs.gutscheinWert.value = raw ? `${raw} €` : "";
+  inputs.gutscheinWert.value = raw;
 });
 
 inputs.gutscheinWert.addEventListener("keydown", e => {
@@ -72,11 +72,13 @@ arrowNext.addEventListener("click", async e => {
   }
 
   try {
+    showView("tile");
     await sendPlannerTicket({
       kachelname:    "Online Gutscheine",
       gutscheincode: code,
       gutscheinwert: wert
     });
+    showToast("Ticket für Online Gutscheine wurde erfolgreich erstellt.");
     resetGutscheinForm();
     showView("tile");
   } catch (err) {
@@ -112,11 +114,13 @@ buttons.popupNo.addEventListener("click", () => {
 
 async function sendGutschein() {
   try {
+    showView("tile");
     await sendPlannerTicket({
       kachelname:    currentTileName || "Online Gutscheine",
       gutscheincode: inputs.gutschein.value.trim(),
       gutscheinwert: getEuroNumericValue()
     });
+    showToast("Ticket für Online Gutscheine wurde erfolgreich erstellt.");
     showView("tile");
   } catch (err) {
     console.error("Gutschein-Fehler:", err);

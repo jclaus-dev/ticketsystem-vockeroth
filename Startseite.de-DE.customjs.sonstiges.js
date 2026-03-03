@@ -34,12 +34,14 @@ buttons.sonstConfirm.addEventListener("click", async e => {
     });
   }
   try {
+    showView("tile");
     await sendPlannerTicket({
       kachelname: "Sonstiges Anliegen",
       text
     });
     inputs.sonstiges.value = "";
     buttons.sonstConfirm.style.color = "white";
+    showToast("Ticket für Sonstiges Anliegen wurde erfolgreich erstellt.");
     showView("tile");
   } catch (err) {
     console.error("Fehler Sonstiges:", err);

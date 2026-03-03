@@ -26,15 +26,31 @@ function showView(name) {
 
   if (containers[name]) containers[name].style.display = "flex";
 
-  if (buttons.homeTab && buttons.ticketsTab) {
-    const isTickets = name === "tickets";
-    buttons.homeTab.classList.toggle("is-active", !isTickets);
-    buttons.ticketsTab.classList.toggle("is-active", isTickets);
+  document.body.classList.remove("view-home", "view-tickets", "view-handbuch", "view-form");
+  if (name === "tile") {
+    document.body.classList.add("view-home");
+  } else if (name === "tickets") {
+    document.body.classList.add("view-tickets");
+  } else if (name === "handbuch" || name === "handbuchDetail" || name === "handbuchArticle") {
+    document.body.classList.add("view-handbuch");
+  } else {
+    document.body.classList.add("view-form");
   }
 
-  if (name === "tile" || name === "tickets") {
+  if (buttons.homeTab && buttons.ticketsTab) {
+    const isHome = name === "tile";
+    const isTickets = name === "tickets";
+    const isHandbuch = name === "handbuch" || name === "handbuchDetail" || name === "handbuchArticle";
+    buttons.homeTab.classList.toggle("is-active", isHome);
+    buttons.ticketsTab.classList.toggle("is-active", isTickets);
+    if (buttons.handbuchTab) {
+      buttons.handbuchTab.classList.toggle("is-active", isHandbuch);
+    }
+  }
+
+  if (name === "tile" || name === "tickets" || name === "handbuch" || name === "handbuchDetail" || name === "handbuchArticle") {
     if (userFieldsWrapper) userFieldsWrapper.style.display = "flex";
-    if (userFields) userFields.style.display = name === "tickets" ? "none" : "flex";
+    if (userFields) userFields.style.display = name === "tile" ? "flex" : "none";
 
     if (name === "tile") {
       if (!inputs.persNr.value.trim()) {
@@ -77,6 +93,7 @@ function updateFilialPlaceholder() {
 }
 
 function setupBlinkingPlaceholder(input) {
+  if (!input || input.dataset.keepPlaceholder === "true") return;
   input.addEventListener("focus", () => {
     if (input.value.trim() === "") {
       input.classList.add("blink-placeholder");
@@ -96,6 +113,7 @@ function setupBlinkingPlaceholder(input) {
 
   input.addEventListener("blur", () => {
     if (input.value.trim() === "") {
+      if (input.dataset.allowEmpty === "true") return;
       setTimeout(() => input.focus(), 10);
     } else {
       input.classList.remove("blink-placeholder");
@@ -103,3 +121,23 @@ function setupBlinkingPlaceholder(input) {
     }
   });
 }
+
+function setupCodeBoxClickFocus() {
+  document.addEventListener("click", evt => {
+    const box = evt.target.closest(".code-box");
+    if (!box) return;
+    if (evt.target.matches("input, textarea")) return;
+
+    const field = box.querySelector("input, textarea");
+    if (!field) return;
+    if (field.disabled || field.readOnly) return;
+
+    field.focus();
+    if (typeof field.setSelectionRange === "function") {
+      const len = field.value ? field.value.length : 0;
+      field.setSelectionRange(len, len);
+    }
+  });
+}
+
+setupCodeBoxClickFocus();
