@@ -35,14 +35,12 @@ buttons.mboardConfirm.addEventListener("click", async e => {
   }
 
   try {
-    showView("tile");
     await sendPlannerTicket({
       kachelname: "Mboard Probleme",
       text
     });
     inputs.mboard.value = "";
     buttons.mboardConfirm.style.color = "white";
-    showToast("Ticket für Mboard Probleme wurde erfolgreich erstellt.");
     showView("tile");
   } catch (err) {
     console.error("Fehler Mboard:", err);
